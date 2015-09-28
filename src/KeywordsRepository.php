@@ -62,6 +62,12 @@ class KeywordsRepository extends IRepository
         return 'keyword_index[' . $cacheKey . ']';
     }
 
+    /**
+     * Checks if the given key collides with a keyword index and throws an exception.
+     *
+     * @param string $key
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     */
     protected function checkReservedKeyPattern($key)
     {
         if (!$this->_keywordsOperation && preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
@@ -205,6 +211,7 @@ class KeywordsRepository extends IRepository
      * @param  string $key
      * @param  mixed  $default
      * @return mixed
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function pull($key, $default = null)
     {
@@ -222,6 +229,7 @@ class KeywordsRepository extends IRepository
      * @param  mixed         $value
      * @param  \DateTime|int $minutes
      * @return void
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function put($key, $value, $minutes)
     {
@@ -241,6 +249,7 @@ class KeywordsRepository extends IRepository
      * @param  mixed         $value
      * @param  \DateTime|int $minutes
      * @return bool
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function add($key, $value, $minutes)
     {
@@ -263,6 +272,7 @@ class KeywordsRepository extends IRepository
      * @param  string $key
      * @param  mixed  $value
      * @return void
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function forever($key, $value)
     {
@@ -282,6 +292,7 @@ class KeywordsRepository extends IRepository
      * @param  \DateTime|int $minutes
      * @param  \Closure      $callback
      * @return mixed
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function remember($key, $minutes, Closure $callback)
     {
@@ -303,6 +314,7 @@ class KeywordsRepository extends IRepository
      * @param  string   $key
      * @param  \Closure $callback
      * @return mixed
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function sear($key, Closure $callback)
     {
@@ -324,6 +336,7 @@ class KeywordsRepository extends IRepository
      * @param  string   $key
      * @param  \Closure $callback
      * @return mixed
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function rememberForever($key, Closure $callback)
     {
@@ -344,6 +357,7 @@ class KeywordsRepository extends IRepository
      *
      * @param  string $key
      * @return bool
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function forget($key)
     {

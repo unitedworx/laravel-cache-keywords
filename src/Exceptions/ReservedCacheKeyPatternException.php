@@ -7,7 +7,7 @@ class ReservedCacheKeyPatternException extends Exception {
     /**
      * Constructor.
      *
-     * @param string    $path
+     * @param string    $key
      * @param int       $code
      * @param Exception $previous
      */
