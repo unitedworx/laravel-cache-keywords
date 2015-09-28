@@ -143,6 +143,16 @@ class CacheKeywordsTest extends TestCase
             $this->cache->keywords('test')->sear('keyword_index[test]', function() { return 'test'; });
             $this->fail($this->failReservedCacheKeyPatternException());
         } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->forget('keyword[test]');
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->forget('keyword_index[test]');
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
     }
 
     private function failReservedCacheKeyPatternException()

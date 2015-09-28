@@ -15,11 +15,11 @@ class KeywordsRepository extends IRepository
     protected $keywords = array();
 
     /**
-     * Internal variable to prevent looped calls.
+     * Internal variable to prevent infinite loop calls & self-deletion.
      *
      * @var bool
      */
-    private $_removingTraces = false;
+    private $_keywordsOperation = false;
 
     /**
      * Fluently selects keywords.
@@ -64,7 +64,7 @@ class KeywordsRepository extends IRepository
 
     protected function checkReservedKeyPattern($key)
     {
-        if (preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
+        if (!$this->_keywordsOperation && preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
             throw new ReservedCacheKeyPatternException($key);
         }
     }
@@ -128,6 +128,8 @@ class KeywordsRepository extends IRepository
      */
     protected function flushKeywordsIndex()
     {
+        $this->_keywordsOperation = true;
+
         $flushedKeys = array();
         foreach ($this->keywords as $keyword) {
             $markedCaches = parent::pull($this->generateIndexKey($keyword), []);
@@ -137,6 +139,8 @@ class KeywordsRepository extends IRepository
                 parent::forget($markedCacheKey);
             }
         }
+
+        $this->_keywordsOperation = false;
 
         return $flushedKeys;
     }
@@ -148,7 +152,7 @@ class KeywordsRepository extends IRepository
      */
     protected function removeTracesInKeywordsIndices(array $keys)
     {
-        $this->_removingTraces = true;
+        $this->_keywordsOperation = true;
 
         foreach ($keys as $key) {
             $inverseIndexKey = $this->generateInverseIndexKey($key);
@@ -165,7 +169,7 @@ class KeywordsRepository extends IRepository
             }
         }
 
-        $this->_removingTraces = false;
+        $this->_keywordsOperation = false;
     }
 
     /**
@@ -332,10 +336,12 @@ class KeywordsRepository extends IRepository
      */
     public function forget($key)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->resetCurrentKeywords();
 
         if ($result = parent::forget($key)) {
-            if (!$this->_removingTraces) {
+            if (!$this->_keywordsOperation) {
                 $this->removeTracesInKeywordsIndices([$key]);
             }
         }
