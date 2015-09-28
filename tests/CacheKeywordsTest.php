@@ -1,7 +1,7 @@
 <?php namespace Propaganistas\LaravelCacheKeywords\Tests;
 
-use Illuminate\Foundation\Testing\TestCase;
-use Propaganistas\LaravelCacheKeywords\ServiceProvider;
+use Orchestra\Testbench\TestCase;
+use Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider;
 use Propaganistas\LaravelCacheKeywords\CacheManager;
 
 class CacheKeywordsTest extends TestCase
@@ -14,20 +14,9 @@ class CacheKeywordsTest extends TestCase
      */
     protected $cache;
 
-    /**
-     * Creates the application.
-     *
-     * @return \Illuminate\Foundation\Application
-     */
-    public function createApplication()
+    protected function getPackageProviders($app)
     {
-        $app = require __DIR__ . '/../../../../bootstrap/app.php';
-
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        $app->register(ServiceProvider::class);
-
-        return $app;
+        return [CacheKeywordsServiceProvider::class];
     }
 
     public function setUp()
