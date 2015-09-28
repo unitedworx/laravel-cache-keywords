@@ -48,7 +48,7 @@ The provided commands are analogous to `tags()`. Define keywords on cache write 
 
 ```php
 Cache::keywords('general')->put('importantKey', 'importantValue', $minutes);
-Cache::keywords(['general', 'stuff'])->put('anotherKey', 'another', $minutes);
+Cache::keywords(['general', 'stuff'])->put('anotherKey', 'anotherValue', $minutes);
 ```
 
 Get a cache record without specifying its bound keywords:
