@@ -11,7 +11,7 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 
 * Cache records can be fetched *without* previously set keywords.
 
-* All cache records marked with a keyword can be flushed at once, even though being marked by other keywords.
+* All cache records marked with a keyword can be flushed at once, even though being marked by other keywords as well.
 
 * Keywords work for all cache drivers.
 
@@ -47,21 +47,21 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 The provided commands are analogous to `tags()`. Define keywords on cache write queries using `keywords()` fluently:
 
 ```php
-Cache::keywords('general')->put('ImportantKey', $importantValue, $minutes);
-Cache::keywords(['general', 'user'])->put('MyUser', $userModel, $minutes);
+Cache::keywords('general')->put('importantKey', 'importantValue', $minutes);
+Cache::keywords(['general', 'stuff'])->put('anotherKey', 'another', $minutes);
 ```
 
 Get a cache record without specifying its bound keywords:
 
 ```php
-Cache::get('ImportantKey'); // returns $importantValue
+Cache::get('importantKey'); // returns 'importantValue'
 ```
 
 Flush all records marked with a specific (set of) keyword(s) using the `flush()` command:
 ```php
-// Deletes all records using the 'user' keyword
-Cache::keywords('user')->flush();
-// 'MyUser' is flushed, disregarding its other keyword.
+// Deletes all records marked with the 'general' keyword
+Cache::keywords('general')->flush();
+// 'importantKey' and 'anotherKey' are both flushed.
 ```
 
 Of course multiple keywords can be flushed at once if an array of keywords is provided.
