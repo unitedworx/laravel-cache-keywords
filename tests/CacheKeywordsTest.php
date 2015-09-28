@@ -2,6 +2,7 @@
 
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider;
+use Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException;
 
 class CacheKeywordsTest extends TestCase
 {
@@ -109,6 +110,44 @@ class CacheKeywordsTest extends TestCase
 
         $this->assertFalse($this->cache->has('keyword_index[key1]'));
         $this->assertEquals(['keyword2', 'keyword3'], $this->cache->get('keyword_index[key2]'));
-
     }
+
+    public function testReservedCacheKeyPattern()
+    {
+        try {
+            $this->cache->put('keyword[test]', 'test', 60);
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->keywords('test')->add('keyword_index[test]', 'test', 60);
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->keywords('test')->forever('keyword[test]', 'test');
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->rememberForever('keyword_index[test]', function() { return 'test'; });
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->remember('keyword[test]', 60, function() { return 'test'; });
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+
+        try {
+            $this->cache->keywords('test')->sear('keyword_index[test]', function() { return 'test'; });
+            $this->fail($this->failReservedCacheKeyPatternException());
+        } catch (ReservedCacheKeyPatternException $e) {}
+    }
+
+    private function failReservedCacheKeyPatternException()
+    {
+        return 'Failed asserting that exception of type ' . ReservedCacheKeyPatternException::class . ' is thrown.';
+    }
+
 }

@@ -2,6 +2,7 @@
 
 use Closure;
 use Illuminate\Cache\Repository as IRepository;
+use Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException;
 
 class KeywordsRepository extends IRepository
 {
@@ -59,6 +60,13 @@ class KeywordsRepository extends IRepository
     protected function generateInverseIndexKey($cacheKey)
     {
         return 'keyword_index[' . $cacheKey . ']';
+    }
+
+    protected function checkReservedKeyPattern($key)
+    {
+        if (preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
+            throw new ReservedCacheKeyPatternException($key);
+        }
     }
 
     /**
@@ -211,6 +219,8 @@ class KeywordsRepository extends IRepository
      */
     public function put($key, $value, $minutes)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->storeKeywords($key, $minutes);
 
         $this->resetCurrentKeywords();
@@ -228,6 +238,8 @@ class KeywordsRepository extends IRepository
      */
     public function add($key, $value, $minutes)
     {
+        $this->checkReservedKeyPattern($key);
+
         $keywords = $this->keywords;
         if ($result = parent::add($key, $value, $minutes)) {
             $this->storeKeywords($key, $minutes, $keywords);
@@ -248,6 +260,8 @@ class KeywordsRepository extends IRepository
      */
     public function forever($key, $value)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->storeKeywords($key);
 
         $this->resetCurrentKeywords();
@@ -265,6 +279,10 @@ class KeywordsRepository extends IRepository
      */
     public function remember($key, $minutes, Closure $callback)
     {
+        $this->checkReservedKeyPattern($key);
+
+        $this->storeKeywords($key);
+
         $this->resetCurrentKeywords();
 
         return parent::remember($key, $minutes, $callback);
@@ -279,6 +297,8 @@ class KeywordsRepository extends IRepository
      */
     public function sear($key, Closure $callback)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->storeKeywords($key);
 
         $this->resetCurrentKeywords();
@@ -295,6 +315,8 @@ class KeywordsRepository extends IRepository
      */
     public function rememberForever($key, Closure $callback)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->storeKeywords($key);
 
         $this->resetCurrentKeywords();
