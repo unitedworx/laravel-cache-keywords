@@ -208,6 +208,8 @@ class KeywordsRepository extends IRepository
      */
     public function pull($key, $default = null)
     {
+        $this->checkReservedKeyPattern($key);
+
         $this->resetCurrentKeywords();
 
         return parent::pull($key, $default);
@@ -283,9 +285,12 @@ class KeywordsRepository extends IRepository
      */
     public function remember($key, $minutes, Closure $callback)
     {
-        $this->checkReservedKeyPattern($key);
+        $keywords = $this->keywords;
+        if (!parent::has($key)) {
+            $this->checkReservedKeyPattern($key);
 
-        $this->storeKeywords($key);
+            $this->storeKeywords($key, $minutes, $keywords);
+        }
 
         $this->resetCurrentKeywords();
 
@@ -301,9 +306,12 @@ class KeywordsRepository extends IRepository
      */
     public function sear($key, Closure $callback)
     {
-        $this->checkReservedKeyPattern($key);
+        $keywords = $this->keywords;
+        if (!parent::has($key)) {
+            $this->checkReservedKeyPattern($key);
 
-        $this->storeKeywords($key);
+            $this->storeKeywords($key, null, $keywords);
+        }
 
         $this->resetCurrentKeywords();
 
@@ -319,9 +327,12 @@ class KeywordsRepository extends IRepository
      */
     public function rememberForever($key, Closure $callback)
     {
-        $this->checkReservedKeyPattern($key);
+        $keywords = $this->keywords;
+        if (!parent::has($key)) {
+            $this->checkReservedKeyPattern($key);
 
-        $this->storeKeywords($key);
+            $this->storeKeywords($key, null, $keywords);
+        }
 
         $this->resetCurrentKeywords();
 
