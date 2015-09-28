@@ -51,6 +51,12 @@ Cache::keywords('general')->put('ImportantKey', $importantValue, $minutes);
 Cache::keywords(['general', 'user'])->put('MyUser', $userModel, $minutes);
 ```
 
+Get a cache record without specifying its bound keywords:
+
+```php
+Cache::get('ImportantKey'); // returns $importantValue
+```
+
 Flush all records marked with a specific (set of) keyword(s) using the `flush()` command:
 ```php
 // Deletes all records using the 'user' keyword
