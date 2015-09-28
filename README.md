@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/Propaganistas/Laravel-Cache-Keywords.svg)](https://travis-ci.org/Propaganistas/Laravel-Cache-Keywords)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Propaganistas/Laravel-Cache-Keywords/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Propaganistas/Laravel-Cache-Keywords/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/Propaganistas/Laravel-Cache-Keywords/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Propaganistas/Laravel-Cache-Keywords/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/propaganistas/laravel-cache-keywords/v/stable)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 [![Total Downloads](https://poser.pugx.org/propaganistas/laravel-cache-keywords/downloads)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 [![License](https://poser.pugx.org/propaganistas/laravel-cache-keywords/license)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
