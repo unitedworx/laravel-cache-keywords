@@ -55,7 +55,7 @@ Flush all records marked with a specific (set of) keyword(s) using the `flush()`
 ```php
 // Deletes all records using the 'user' keyword
 Cache::keywords('user')->flush();
-// 'MyUser' is flushed, despite its other keyword.
+// 'MyUser' is flushed, disregarding its other keyword.
 ```
 
 Of course multiple keywords can be flushed at once if an array of keywords is provided.
