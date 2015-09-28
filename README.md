@@ -6,7 +6,7 @@
 [![Total Downloads](https://poser.pugx.org/propaganistas/laravel-cache-keywords/downloads)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 [![License](https://poser.pugx.org/propaganistas/laravel-cache-keywords/license)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 
-Provides Laravel's Cache with `keywords` behavior. Keywords differ from Laravel's own `tags` implementation because
+Provides Laravel's Cache with `keywords` behavior. Keywords differ from Laravel's built-in `tags` implementation in the following aspects:
 
 * Cache records can be fetched *without* previously set keywords.
 
@@ -43,9 +43,7 @@ Provides Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 
 ### Usage
 
-The provided commands are analogous to `tags()`:
-
-Define keywords on cache write queries using `keywords()` fluently:
+The provided commands are analogous to `tags()`. Define keywords on cache write queries using `keywords()` fluently:
 
 ```php
 Cache::keywords('general')->put('ImportantKey', $importantValue, $minutes);
@@ -64,4 +62,4 @@ Of course multiple keywords can be flushed at once if an array of keywords is pr
 
 ### Notice
 
-This package features a slightly modified version of Laravel's built-in `Illuminate\Cache\CacheManager` class and injects it into the IoC container. If you are using a custom `CacheManager` of your own, please override its `repository()` method to use this packages `Repository` class.
+This package features a slightly modified version of Laravel's built-in `Illuminate\Cache\CacheManager` class and injects it into the IoC container. If you are using a custom `CacheManager` of your own, please override its `repository()` method to use this package's `Repository` class.
