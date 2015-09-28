@@ -6,7 +6,7 @@
 [![Total Downloads](https://poser.pugx.org/propaganistas/laravel-cache-keywords/downloads)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 [![License](https://poser.pugx.org/propaganistas/laravel-cache-keywords/license)](https://packagist.org/packages/propaganistas/laravel-cache-keywords)
 
-Provides Laravel's Cache with `keywords` behavior. Keywords differ from Laravel's built-in `tags` implementation in the following aspects:
+Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel's built-in `tags` implementation in the following aspects:
 
 * Cache records can be fetched *without* previously set keywords.
 

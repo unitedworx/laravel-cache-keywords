@@ -57,9 +57,9 @@ class KeywordsRepository extends IRepository
     /**
      * Stores the defined keywords for the provided key.
      *
-     * @param       $key
-     * @param null  $minutes
-     * @param array $keywords
+     * @param string $key
+     * @param null   $minutes
+     * @param array  $keywords
      */
     protected function storeKeywords($key, $minutes = null, $keywords = array())
     {
