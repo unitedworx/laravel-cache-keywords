@@ -11,7 +11,7 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 
 * Cache records can be fetched *without* previously set keywords.
 
-* All cache records marked with a keyword can be flushed at once, despite being marked by other keywords.
+* All cache records marked with a keyword can be flushed at once, even though being marked by other keywords.
 
 * Keywords work for all cache drivers.
 
