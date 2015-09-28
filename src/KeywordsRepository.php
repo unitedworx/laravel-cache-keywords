@@ -14,6 +14,13 @@ class KeywordsRepository extends IRepository
     protected $keywords = array();
 
     /**
+     * Internal variable to prevent looped calls.
+     *
+     * @var bool
+     */
+    private $_removingTraces = false;
+
+    /**
      * Fluently selects keywords.
      *
      * @param  mixed $keywords
@@ -61,7 +68,7 @@ class KeywordsRepository extends IRepository
      * @param null   $minutes
      * @param array  $keywords
      */
-    protected function storeKeywords($key, $minutes = null, $keywords = array())
+    protected function storeKeywords($key, $minutes = null, array $keywords = array())
     {
         $keywords = empty($keywords) ? $this->keywords : $keywords;
 
@@ -97,7 +104,7 @@ class KeywordsRepository extends IRepository
     {
         if (!empty($this->keywords)) {
             $flushedKeys = $this->flushKeywordsIndex();
-            $this->removeKeysFromInverseKeywordsIndices($flushedKeys);
+            $this->removeTracesInKeywordsIndices($flushedKeys);
         } else {
             parent::flush();
         }
@@ -127,15 +134,19 @@ class KeywordsRepository extends IRepository
     }
 
     /**
-     * Removes the provided keys from inverse indices
+     * Removes the provided keys from inverse indices.
      *
      * @param array $keys
      */
-    protected function removeKeysFromInverseKeywordsIndices(array $keys)
+    protected function removeTracesInKeywordsIndices(array $keys)
     {
+        $this->_removingTraces = true;
+
         foreach ($keys as $key) {
             $inverseIndexKey = $this->generateInverseIndexKey($key);
+            // Delete inverse index.
             $inverseIndex = parent::pull($inverseIndexKey, []);
+            // Remove key from affected indices.
             foreach ($inverseIndex as $affectedKeyword) {
                 $indexKey = $this->generateIndexKey($affectedKeyword);
                 $index = parent::pull($indexKey, []);
@@ -145,6 +156,8 @@ class KeywordsRepository extends IRepository
                 }
             }
         }
+
+        $this->_removingTraces = false;
     }
 
     /**
@@ -299,6 +312,12 @@ class KeywordsRepository extends IRepository
     {
         $this->resetCurrentKeywords();
 
-        return parent::forget($key);
+        if ($result = parent::forget($key)) {
+            if (!$this->_removingTraces) {
+                $this->removeTracesInKeywordsIndices([$key]);
+            }
+        }
+
+        return $result;
     }
 }

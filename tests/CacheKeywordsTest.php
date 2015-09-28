@@ -2,7 +2,6 @@
 
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider;
-use Propaganistas\LaravelCacheKeywords\CacheManager;
 
 class CacheKeywordsTest extends TestCase
 {
@@ -86,5 +85,20 @@ class CacheKeywordsTest extends TestCase
         $this->cache->flush();
         $this->assertFalse($this->cache->has('key3'));
         $this->assertFalse($this->cache->has('key4'));
+    }
+
+    public function testForget()
+    {
+        $this->cache->forget('key1');
+
+        $this->assertFalse($this->cache->has('key1'));
+        $this->assertTrue($this->cache->has('key2'));
+
+        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        $this->assertEquals(['key2'], array_values($this->cache->get('keyword[keyword2]')));
+
+        $this->assertFalse($this->cache->has('keyword_index[key1]'));
+        $this->assertEquals(['keyword2', 'keyword3'], $this->cache->get('keyword_index[key2]'));
+
     }
 }
