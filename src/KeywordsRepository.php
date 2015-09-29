@@ -56,7 +56,7 @@ class KeywordsRepository extends IRepository
      */
     private function setKeywordsOperation($increment = true)
     {
-        return $result = ($increment ? $this->_keywordsOperation++ : $this->_keywordsOperation--);
+        return $increment ? $this->_keywordsOperation ++ : $this->_keywordsOperation --;
     }
 
     /**
@@ -156,9 +156,9 @@ class KeywordsRepository extends IRepository
     /**
      * Stores the defined keywords for the provided key.
      *
-     * @param string   $key
-     * @param int|null $minutes
-     * @param array    $keywords
+     * @param string             $key
+     * @param \DateTime|int|null $minutes
+     * @param array              $keywords
      */
     protected function storeKeywords($key, $minutes = null, array $keywords = array())
     {
@@ -173,10 +173,8 @@ class KeywordsRepository extends IRepository
 
     /**
      * Updates keyword indices for the given cache key.
-     *
-     * @param  string $key
      */
-    protected function updateKeywordIndex($key, $keywords = array())
+    protected function updateKeywordIndex($key)
     {
         $this->setKeywordsOperation(true);
 
@@ -200,8 +198,8 @@ class KeywordsRepository extends IRepository
     /**
      * Updates the inverse index for the given cache key.
      *
-     * @param  string   $key
-     * @param  int|null $minutes
+     * @param  string             $key
+     * @param  \DateTime|int|null $minutes
      */
     protected function updateInverseIndex($key, $minutes = null)
     {
@@ -213,8 +211,7 @@ class KeywordsRepository extends IRepository
 
         if (empty($keywordsState['new'])) {
             parent::forget($inverseIndexKey);
-        }
-        elseif ($keywordsState['old'] != $keywordsState['new']) {
+        } elseif ($keywordsState['old'] != $keywordsState['new']) {
             is_null($minutes) ?
                 parent::forever($inverseIndexKey, $keywordsState['new']) :
                 parent::put($inverseIndexKey, $keywordsState['new'], $minutes);
@@ -232,18 +229,7 @@ class KeywordsRepository extends IRepository
      */
     protected function forgetKeywordIndex($keywords)
     {
-        $this->setKeywordsOperation(true);
-
-        $keywords = is_array($keywords) ? $keywords : func_get_args();
-
-        $affectedKeys = array();
-        foreach ($keywords as $keyword) {
-            $affectedKeys = array_merge($affectedKeys, parent::pull($this->generateIndexKey($keyword), []));
-        }
-
-        $this->setKeywordsOperation(false);
-
-        return array_unique($affectedKeys);
+        return $this->forgetIndexType('keyword', $keywords);
     }
 
     /**
@@ -255,18 +241,45 @@ class KeywordsRepository extends IRepository
      */
     protected function forgetInverseIndex($keys)
     {
+        return $this->forgetIndexType('inverse', $keys);
+    }
+
+    /**
+     * Forgets the given index of (a) given keyword(s).
+     * Returns all containing keys.
+     *
+     * @param  string       $type
+     * @param  string|array $keywords
+     * @return array
+     */
+    protected function forgetIndexType($type, $givenKeys)
+    {
         $this->setKeywordsOperation(true);
 
-        $keys = is_array($keys) ? $keys : func_get_args();
+        $givenKeys = is_array($givenKeys) ? $givenKeys : func_get_args();
 
-        $affectedKeywords = array();
-        foreach ($keys as $key) {
-            $affectedKeywords = array_merge($affectedKeywords, parent::pull($this->generateInverseIndexKey($key), []));
+        switch ($type) {
+            case 'keyword':
+            default:
+                $callback = function($givenKey) {
+                    return parent::pull($this->generateIndexKey($givenKey), []);
+                };
+                break;
+            case 'inverse':
+                $callback = function($givenKey) {
+                    return parent::pull($this->generateInverseIndexKey($givenKey), []);
+                };
+                break;
+        }
+
+        $affected = array();
+        foreach ($givenKeys as $givenKey) {
+            $affected = array_merge($affected, call_user_func($callback, $givenKey));
         }
 
         $this->setKeywordsOperation(false);
 
-        return array_unique($affectedKeywords);
+        return array_unique($affected);
     }
 
     /**
@@ -515,7 +528,7 @@ class KeywordsRepository extends IRepository
                 // Set all affected keywords as old keywords and request
                 // empty new keywords to remove the flushed key from other indices as well.
                 $this->determineKeywordsState($flushedKey, [], $affectedKeywords, true);
-                $this->updateKeywordIndex($flushedKey, []);
+                $this->updateKeywordIndex($flushedKey);
                 parent::forget($flushedKey);
             }
         } else {
