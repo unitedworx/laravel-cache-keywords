@@ -297,15 +297,20 @@ class KeywordsRepository extends IRepository
     public function remember($key, $minutes, Closure $callback)
     {
         $keywords = $this->keywords;
-        if (!parent::has($key)) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, $minutes, $keywords);
-        }
 
         $this->resetCurrentKeywords();
 
-        return parent::remember($key, $minutes, $callback);
+        // Instead of using has() we directly implement the value getter
+        // to avoid additional cache hits if the key exists.
+        if (is_null($value = parent::get($key))) {
+            $this->checkReservedKeyPattern($key);
+
+            $this->storeKeywords($key, $minutes, $keywords);
+
+            return parent::remember($key, $minutes, $callback);
+        }
+
+        return $value;
     }
 
     /**
@@ -319,15 +324,20 @@ class KeywordsRepository extends IRepository
     public function sear($key, Closure $callback)
     {
         $keywords = $this->keywords;
-        if (!parent::has($key)) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, null, $keywords);
-        }
 
         $this->resetCurrentKeywords();
 
-        return parent::sear($key, $callback);
+        // Instead of using has() we directly implement the value getter
+        // to avoid additional cache hits if the key exists.
+        if (is_null($value = parent::get($key))) {
+            $this->checkReservedKeyPattern($key);
+
+            $this->storeKeywords($key, null, $keywords);
+
+            return parent::sear($key, $callback);
+        }
+
+        return $value;
     }
 
     /**
@@ -341,15 +351,20 @@ class KeywordsRepository extends IRepository
     public function rememberForever($key, Closure $callback)
     {
         $keywords = $this->keywords;
-        if (!parent::has($key)) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, null, $keywords);
-        }
 
         $this->resetCurrentKeywords();
 
-        return parent::rememberForever($key, $callback);
+        // Instead of using has() we directly implement the value getter
+        // to avoid additional cache hits if the key exists.
+        if (is_null($value = parent::get($key))) {
+            $this->checkReservedKeyPattern($key);
+
+            $this->storeKeywords($key, null, $keywords);
+
+            return parent::rememberForever($key, $callback);
+        }
+
+        return $value;
     }
 
     /**
