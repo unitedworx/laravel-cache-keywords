@@ -1,4 +1,12 @@
-<?php namespace Propaganistas\LaravelCacheKeywords\Tests;
+<?php
+/**
+ * Test class file for the Laravel Cache Keywords package.
+ *
+ * Note that process isolation is turned on in phpunit.xml because of
+ * the use of a static variable in KeywordsRepository.
+ */
+
+namespace Propaganistas\LaravelCacheKeywords\Tests;
 
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider;
@@ -14,11 +22,23 @@ class CacheKeywordsTest extends TestCase
      */
     protected $cache;
 
+    /**
+     * Get package providers.
+     *
+     * @param  \Illuminate\Foundation\Application $app
+     *
+     * @return array
+     */
     protected function getPackageProviders($app)
     {
         return [CacheKeywordsServiceProvider::class];
     }
 
+    /**
+     * Setup the test environment.
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -28,16 +48,9 @@ class CacheKeywordsTest extends TestCase
         $this->cache->keywords(['keyword1', 'keyword2'])->put('key1', 'value1', 60);
         $this->cache->keywords(['keyword2', 'keyword3'])->add('key2', 'value2', 60);
         $this->cache->keywords(['keyword3', 'keyword4'])->forever('key3', 'value3');
-        $this->cache->keywords(['keyword4'])->rememberForever('key4', function() { return 'value4'; });
-        $this->cache->keywords(['keyword5'])->remember('key5', 60, function() { return 'value5'; });
-        $this->cache->keywords(['keyword6'])->sear('key6', function() { return 'value6'; });
-    }
-
-    public function tearDown()
-    {
-        $this->cache->flush();
-
-        parent::tearDown();
+        $this->cache->keywords(['keyword4'])->rememberForever('key4', function () {return 'value4';});
+        $this->cache->keywords(['keyword5'])->remember('key5', 60, function () {return 'value5';});
+        $this->cache->keywords(['keyword6'])->sear('key6', function () {return 'value6';});
     }
 
     public function testValueIsStillInsertedInCache()
@@ -117,42 +130,50 @@ class CacheKeywordsTest extends TestCase
         try {
             $this->cache->put('keyword[test]', 'test', 60);
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->keywords('test')->add('keyword_index[test]', 'test', 60);
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->keywords('test')->forever('keyword[test]', 'test');
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->rememberForever('keyword_index[test]', function() { return 'test'; });
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->remember('keyword[test]', 60, function() { return 'test'; });
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->keywords('test')->sear('keyword_index[test]', function() { return 'test'; });
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->forget('keyword[test]');
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
 
         try {
             $this->cache->forget('keyword_index[test]');
             $this->fail($this->failReservedCacheKeyPatternException());
-        } catch (ReservedCacheKeyPatternException $e) {}
+        } catch (ReservedCacheKeyPatternException $e) {
+        }
     }
 
     private function failReservedCacheKeyPatternException()

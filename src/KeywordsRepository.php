@@ -15,11 +15,59 @@ class KeywordsRepository extends IRepository
     protected $keywords = array();
 
     /**
-     * Internal variable to prevent infinite loop calls & self-deletion.
+     * Boolean indicating if the provided keywords should be added to existing keywords.
+     * If false, keywords will be overwritten.
      *
      * @var bool
      */
-    private $_keywordsOperation = false;
+    protected $mergeKeywords = false;
+
+    /**
+     * Internal increment variable to prevent infinite loop calls & self-deletion.
+     *
+     * @var int
+     */
+    private $_keywordsOperation = 0;
+
+    /**
+     * Resets the internal keywords storage.
+     */
+    protected function resetCurrentKeywords()
+    {
+        $this->keywords = array();
+
+        $this->resetMergeKeywords();
+    }
+
+    /**
+     * Resets the addKeywords boolean
+     */
+    protected function resetMergeKeywords()
+    {
+        $this->mergeKeywords = false;
+    }
+
+    /**
+     * Increment or decrement the internal operations variable to set the nested operations level.
+     * Returns the current nested level.
+     *
+     * @param  bool $increment
+     * @return int
+     */
+    private function setKeywordsOperation($increment = true)
+    {
+        return $result = ($increment ? $this->_keywordsOperation++ : $this->_keywordsOperation--);
+    }
+
+    /**
+     * Returns if the class is operating on keywords.
+     *
+     * @return bool
+     */
+    private function operatingOnKeywords()
+    {
+        return (bool) $this->_keywordsOperation;
+    }
 
     /**
      * Fluently selects keywords.
@@ -27,7 +75,7 @@ class KeywordsRepository extends IRepository
      * @param  mixed $keywords
      * @return $this
      */
-    public function keywords($keywords)
+    public function keywords($keywords = array(), $merge = false)
     {
         $keywords = is_array($keywords) ? $keywords : func_get_args();
 
@@ -35,7 +83,8 @@ class KeywordsRepository extends IRepository
             $value = is_object($value) ? get_class($value) : $value;
         });
 
-        $this->keywords = $keywords;
+        $this->keywords = array_unique($keywords);
+        $this->mergeKeywords = $merge;
 
         return $this;
     }
@@ -70,112 +119,154 @@ class KeywordsRepository extends IRepository
      */
     protected function checkReservedKeyPattern($key)
     {
-        if (!$this->_keywordsOperation && preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
+        if (!$this->operatingOnKeywords() && preg_match('/^keyword(_index)?\[(.*)\]$/', $key)) {
             throw new ReservedCacheKeyPatternException($key);
         }
     }
 
     /**
+     * Assembles a comparison of the provided keywords against the current state for a given key.
+     *
+     * @param  string $key
+     * @param  array  $newKeywords
+     * @param  array  $oldKeywords
+     * @return array
+     */
+    protected function determineKeywordsState($key, array $newKeywords = array(), array $oldKeywords = array(), $force = false)
+    {
+        $this->setKeywordsOperation(true);
+
+        static $state = array();
+
+        if (!isset($state[$key]) || $force) {
+            $old = empty($oldKeywords) ? parent::get($this->generateInverseIndexKey($key), []) : $oldKeywords;
+            $new = $this->mergeKeywords ? array_unique(array_merge($old, $newKeywords)) : $newKeywords;
+            $state[$key] = array(
+                'old'      => $old,
+                'new'      => $new,
+                'obsolete' => array_diff($old, $new)
+            );
+        }
+
+        $this->setKeywordsOperation(false);
+
+        return $state[$key];
+    }
+
+    /**
      * Stores the defined keywords for the provided key.
      *
-     * @param string $key
-     * @param null   $minutes
-     * @param array  $keywords
+     * @param string   $key
+     * @param int|null $minutes
+     * @param array    $keywords
      */
     protected function storeKeywords($key, $minutes = null, array $keywords = array())
     {
         $keywords = empty($keywords) ? $this->keywords : $keywords;
 
-        // Store keyword index.
-        foreach ($keywords as $keyword) {
-            $indexKey = $this->generateIndexKey($keyword);
-            $index = parent::get($indexKey, []);
-            $index = array_merge($index, [$key]);
-            parent::forever($indexKey, $index);
-        }
+        $this->determineKeywordsState($key, $keywords);
 
-        // Store inverse index
-        $inverseIndexKey = $this->generateInverseIndexKey($key);
-        $inverseIndex = parent::get($inverseIndexKey, []);
-        $inverseIndex = array_merge($inverseIndex, $keywords);
-        is_null($minutes) ?
-            parent::forever($inverseIndexKey, $inverseIndex) :
-            parent::put($inverseIndexKey, $inverseIndex, $minutes);
+        $this->updateKeywordIndex($key);
+
+        $this->updateInverseIndex($key, $minutes);
     }
 
     /**
-     * Resets the internal keywords storage.
-     */
-    protected function resetCurrentKeywords()
-    {
-        $this->keywords = array();
-    }
-
-    /**
-     * Flushes keywords indices if keywords were provided, otherwise proceeds to regular flush() method.
-     */
-    public function flush()
-    {
-        if (!empty($this->keywords)) {
-            $flushedKeys = $this->flushKeywordsIndex();
-            $this->removeTracesInKeywordsIndices($flushedKeys);
-        } else {
-            parent::flush();
-        }
-
-        $this->resetCurrentKeywords();
-    }
-
-    /**
-     * Flushes all keys associated with the current keywords and also removes the keyword index.
-     * Returns the flushed keys.
+     * Updates keyword indices for the given cache key.
      *
+     * @param  string $key
+     */
+    protected function updateKeywordIndex($key, $keywords = array())
+    {
+        $this->setKeywordsOperation(true);
+
+        $keywordsState = $this->determineKeywordsState($key);
+
+        foreach (array_merge($keywordsState['new'], $keywordsState['obsolete']) as $keyword) {
+            $indexKey = $this->generateIndexKey($keyword);
+            $oldIndex = parent::pull($indexKey, []);
+            $newIndex = in_array($keyword, $keywordsState['obsolete']) ?
+                array_diff($oldIndex, [$key]) :
+                array_unique(array_merge($oldIndex, [$key]));
+
+            if (!empty($newIndex)) {
+                parent::forever($indexKey, $newIndex);
+            }
+        }
+
+        $this->setKeywordsOperation(false);
+    }
+
+    /**
+     * Updates the inverse index for the given cache key.
+     *
+     * @param  string   $key
+     * @param  int|null $minutes
+     */
+    protected function updateInverseIndex($key, $minutes = null)
+    {
+        $this->setKeywordsOperation(true);
+
+        $keywordsState = $this->determineKeywordsState($key);
+
+        $inverseIndexKey = $this->generateInverseIndexKey($key);
+
+        if (empty($keywordsState['new'])) {
+            parent::forget($inverseIndexKey);
+        }
+        elseif ($keywordsState['old'] != $keywordsState['new']) {
+            is_null($minutes) ?
+                parent::forever($inverseIndexKey, $keywordsState['new']) :
+                parent::put($inverseIndexKey, $keywordsState['new'], $minutes);
+        }
+
+        $this->setKeywordsOperation(false);
+    }
+
+    /**
+     * Forgets the index of (a) given keyword(s).
+     * Returns all containing cache keys.
+     *
+     * @param  string|array $keywords
      * @return array
      */
-    protected function flushKeywordsIndex()
+    protected function forgetKeywordIndex($keywords)
     {
-        $this->_keywordsOperation = true;
+        $this->setKeywordsOperation(true);
 
-        $flushedKeys = array();
-        foreach ($this->keywords as $keyword) {
-            $markedCaches = parent::pull($this->generateIndexKey($keyword), []);
-            foreach ($markedCaches as $markedCacheKey) {
-                $flushedKeys[] = $markedCacheKey;
-                // Clear cache key.
-                parent::forget($markedCacheKey);
-            }
+        $keywords = is_array($keywords) ? $keywords : func_get_args();
+
+        $affectedKeys = array();
+        foreach ($keywords as $keyword) {
+            $affectedKeys = array_merge($affectedKeys, parent::pull($this->generateIndexKey($keyword), []));
         }
 
-        $this->_keywordsOperation = false;
+        $this->setKeywordsOperation(false);
 
-        return $flushedKeys;
+        return array_unique($affectedKeys);
     }
 
     /**
-     * Removes the provided keys from inverse indices.
+     * Forgets the inverse index of (a) given cache key(s).
+     * Returns all containing keywords.
      *
-     * @param array $keys
+     * @param  string|array $keys
+     * @return array
      */
-    protected function removeTracesInKeywordsIndices(array $keys)
+    protected function forgetInverseIndex($keys)
     {
-        $this->_keywordsOperation = true;
+        $this->setKeywordsOperation(true);
 
+        $keys = is_array($keys) ? $keys : func_get_args();
+
+        $affectedKeywords = array();
         foreach ($keys as $key) {
-            $inverseIndexKey = $this->generateInverseIndexKey($key);
-            // Delete inverse index.
-            $inverseIndex = parent::pull($inverseIndexKey, []);
-            // Remove key from affected indices.
-            foreach ($inverseIndex as $affectedKeyword) {
-                $indexKey = $this->generateIndexKey($affectedKeyword);
-                $index = parent::pull($indexKey, []);
-                $index = array_diff($index, [$key]);
-                if (!empty($index)) {
-                    parent::forever($indexKey, $index);
-                }
-            }
+            $affectedKeywords = array_merge($affectedKeywords, parent::pull($this->generateInverseIndexKey($key), []));
         }
 
-        $this->_keywordsOperation = false;
+        $this->setKeywordsOperation(false);
+
+        return array_unique($affectedKeywords);
     }
 
     /**
@@ -186,7 +277,9 @@ class KeywordsRepository extends IRepository
      */
     public function has($key)
     {
-        $this->resetCurrentKeywords();
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
 
         return parent::has($key);
     }
@@ -200,7 +293,9 @@ class KeywordsRepository extends IRepository
      */
     public function get($key, $default = null)
     {
-        $this->resetCurrentKeywords();
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
 
         return parent::get($key, $default);
     }
@@ -217,7 +312,9 @@ class KeywordsRepository extends IRepository
     {
         $this->checkReservedKeyPattern($key);
 
-        $this->resetCurrentKeywords();
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
 
         return parent::pull($key, $default);
     }
@@ -237,7 +334,9 @@ class KeywordsRepository extends IRepository
 
         $this->storeKeywords($key, $minutes);
 
-        $this->resetCurrentKeywords();
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
 
         parent::put($key, $value, $minutes);
     }
@@ -255,10 +354,13 @@ class KeywordsRepository extends IRepository
     {
         $this->checkReservedKeyPattern($key);
 
-        $keywords = $this->keywords;
+        $this->setKeywordsOperation(true);
+
         if ($result = parent::add($key, $value, $minutes)) {
-            $this->storeKeywords($key, $minutes, $keywords);
+            $this->storeKeywords($key, $minutes, $this->keywords);
         }
+
+        $this->setKeywordsOperation(false);
 
         $this->resetCurrentKeywords();
 
@@ -280,7 +382,9 @@ class KeywordsRepository extends IRepository
 
         $this->storeKeywords($key);
 
-        $this->resetCurrentKeywords();
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
 
         parent::forever($key, $value);
     }
@@ -296,18 +400,18 @@ class KeywordsRepository extends IRepository
      */
     public function remember($key, $minutes, Closure $callback)
     {
-        $keywords = $this->keywords;
-
-        $this->resetCurrentKeywords();
-
         // Instead of using has() we directly implement the value getter
         // to avoid additional cache hits if the key exists.
         if (is_null($value = parent::get($key))) {
             $this->checkReservedKeyPattern($key);
 
-            $this->storeKeywords($key, $minutes, $keywords);
+            $this->storeKeywords($key, $minutes, $this->keywords);
 
-            return parent::remember($key, $minutes, $callback);
+            $value = parent::remember($key, $minutes, $callback);
+        }
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
         }
 
         return $value;
@@ -323,18 +427,18 @@ class KeywordsRepository extends IRepository
      */
     public function sear($key, Closure $callback)
     {
-        $keywords = $this->keywords;
-
-        $this->resetCurrentKeywords();
-
         // Instead of using has() we directly implement the value getter
         // to avoid additional cache hits if the key exists.
         if (is_null($value = parent::get($key))) {
             $this->checkReservedKeyPattern($key);
 
-            $this->storeKeywords($key, null, $keywords);
+            $this->storeKeywords($key, null, $this->keywords);
 
-            return parent::sear($key, $callback);
+            $value = parent::sear($key, $callback);
+        }
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
         }
 
         return $value;
@@ -350,18 +454,18 @@ class KeywordsRepository extends IRepository
      */
     public function rememberForever($key, Closure $callback)
     {
-        $keywords = $this->keywords;
-
-        $this->resetCurrentKeywords();
-
         // Instead of using has() we directly implement the value getter
         // to avoid additional cache hits if the key exists.
         if (is_null($value = parent::get($key))) {
             $this->checkReservedKeyPattern($key);
 
-            $this->storeKeywords($key, null, $keywords);
+            $this->storeKeywords($key, null, $this->keywords);
 
-            return parent::rememberForever($key, $callback);
+            $value = parent::rememberForever($key, $callback);
+        }
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
         }
 
         return $value;
@@ -378,14 +482,48 @@ class KeywordsRepository extends IRepository
     {
         $this->checkReservedKeyPattern($key);
 
-        $this->resetCurrentKeywords();
-
         if ($result = parent::forget($key)) {
-            if (!$this->_keywordsOperation) {
-                $this->removeTracesInKeywordsIndices([$key]);
+            if (!$this->operatingOnKeywords()) {
+
+                $affectedKeywords = $this->forgetInverseIndex($key);
+
+                // Set all affected keywords as old keywords and request
+                // empty new keywords to remove the flushed key from other indices as well.
+                $this->determineKeywordsState($key, [], $affectedKeywords, true);
+                $this->updateKeywordIndex($key, []);
             }
         }
 
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
+
         return $result;
+    }
+
+    /**
+     * Flushes traces of records related to the provided keywords, otherwise proceeds to regular flush() method.
+     */
+    public function flush()
+    {
+        if (!empty($this->keywords)) {
+            $flushedKeys = $this->forgetKeywordIndex($this->keywords);
+
+            $affectedKeywords = $this->forgetInverseIndex($flushedKeys);
+
+            foreach ($flushedKeys as $flushedKey) {
+                // Set all affected keywords as old keywords and request
+                // empty new keywords to remove the flushed key from other indices as well.
+                $this->determineKeywordsState($flushedKey, [], $affectedKeywords, true);
+                $this->updateKeywordIndex($flushedKey, []);
+                parent::forget($flushedKey);
+            }
+        } else {
+            parent::flush();
+        }
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
     }
 }
