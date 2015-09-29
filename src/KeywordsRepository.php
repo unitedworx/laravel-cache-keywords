@@ -245,11 +245,11 @@ class KeywordsRepository extends IRepository
     }
 
     /**
-     * Forgets the given index of (a) given keyword(s).
+     * Forgets the given index of (a) given key(s).
      * Returns all containing keys.
      *
      * @param  string       $type
-     * @param  string|array $keywords
+     * @param  string|array $givenKeys
      * @return array
      */
     protected function forgetIndexType($type, $givenKeys)
@@ -503,7 +503,7 @@ class KeywordsRepository extends IRepository
                 // Set all affected keywords as old keywords and request
                 // empty new keywords to remove the flushed key from other indices as well.
                 $this->determineKeywordsState($key, [], $affectedKeywords, true);
-                $this->updateKeywordIndex($key, []);
+                $this->updateKeywordIndex($key);
             }
         }
 
