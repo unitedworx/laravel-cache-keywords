@@ -137,7 +137,7 @@ class KeywordsRepository extends IRepository
         $this->checkReservedKeyPattern($args['key']);
 
         // Store keywords without passing value as argument.
-        call_user_func_array(array($this, 'storeKeywords'), array_values(array_diff_key($args, ['value' => null])));
+        call_user_func_array(array($this, 'storeKeywords'), array_only($args, ['key', 'minutes', 'keywords']));
 
         if (!$this->operatingOnKeywords()) {
             $this->resetCurrentKeywords();
@@ -162,7 +162,7 @@ class KeywordsRepository extends IRepository
             $this->checkReservedKeyPattern($args['key']);
 
             // Store keywords without passing callback as argument.
-            call_user_func_array(array($this, 'storeKeywords'), array_values(array_diff_key($args, ['callback' => null])));
+            call_user_func_array(array($this, 'storeKeywords'), array_only($args, ['key', 'minutes', 'keywords']));
 
             $value = call_user_func_array(array('parent', $method), array_values($args));
         }
