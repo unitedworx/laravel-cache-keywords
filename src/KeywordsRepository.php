@@ -142,7 +142,7 @@ class KeywordsRepository extends IRepository
         // - not built yet
         // - $newKeywords or $oldKeywords is provided
         // - force determine set
-        if (!isset($state[$key]) || !(empty($newKeywords) && empty($oldKeywords))) || $force) {
+        if (!isset($state[$key]) || !(empty($newKeywords) && empty($oldKeywords)) || $force) {
             $old = empty($oldKeywords) ? parent::get($this->generateInverseIndexKey($key), []) : $oldKeywords;
             $new = $this->mergeKeywords ? array_unique(array_merge($old, $newKeywords)) : $newKeywords;
             $state[$key] = array(
