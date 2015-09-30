@@ -44,29 +44,34 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 
 ### Usage
 
-The provided commands are analogous to `tags()`. Define keywords on cache write queries using `keywords()` fluently:
+The provided commands are analogous to `tags()`. Define keywords on cache write queries using the `keywords()` method fluently.
+Provide an array of keywords or pass each keyword as a separate argument:
 
 ```php
-Cache::keywords('general')->put('importantKey', 'importantValue', $minutes);
-Cache::keywords(['general', 'stuff'])->put('anotherKey', 'anotherValue', $minutes);
+Cache::keywords('keyword1', 'keyword2')->put('key1', 'value1', $minutes);
+Cache::keywords(['keyword2', 'keyword3'])->put('key2', 'value2', $minutes);
 ```
 
-Get a cache record without specifying its bound keywords:
+By default keywords are overwritten each time a cache record is updated. If you want to *add* the keywords to an existing set, call `keywords()` with `true` as the very last parameter:
+```php
+Cache::keywords('addedKeyword1', 'addedKeyword2', true)->put('key1', 'updatedValue1', $minutes);
+Cache::keywords(['addedKeyword1', 'addedKeyword2'], true)->put('key2', 'updatedValue2', $minutes);
+```
+
+Get a cache record easily without specifying its bound keywords:
 
 ```php
-Cache::get('importantKey'); // returns 'importantValue'
+Cache::get('key1');
 ```
 
 Flush all records marked with a specific (set of) keyword(s) using the `flush()` command:
 ```php
-// Deletes all records marked with the 'general' keyword
-Cache::keywords('general')->flush();
-// 'importantKey' and 'anotherKey' are both flushed.
+Cache::keywords('keyword2')->flush(); // 'key1' and 'key2' are both flushed.
+Cache::keywords(['keyword1', 'keyword3'])->flush(); // 'key1' and 'key2' are both flushed.
 ```
 
-Of course multiple keywords can be flushed at once if an array of keywords is provided.
+---
 
-
-### Notice
+**Notice**
 
 This package features a slightly modified version of Laravel's built-in `Illuminate\Cache\CacheManager` class and injects it into the IoC container. If you are using a custom `CacheManager` of your own, please override its `repository()` method to use this package's `Repository` class.
