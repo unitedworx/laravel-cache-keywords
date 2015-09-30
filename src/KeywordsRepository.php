@@ -142,7 +142,7 @@ class KeywordsRepository extends IRepository
         // - not built yet
         // - $newKeywords or $oldKeywords is provided
         // - force determine set
-        if (!isset($state[$key]) || !(empty($newKeywords && empty($oldKeywords))) || $force) {
+        if (!isset($state[$key]) || !(empty($newKeywords) && empty($oldKeywords))) || $force) {
             $old = empty($oldKeywords) ? parent::get($this->generateInverseIndexKey($key), []) : $oldKeywords;
             $new = $this->mergeKeywords ? array_unique(array_merge($old, $newKeywords)) : $newKeywords;
             $state[$key] = array(
@@ -263,22 +263,22 @@ class KeywordsRepository extends IRepository
         $givenKeys = is_array($givenKeys) ? $givenKeys : func_get_args();
 
         switch ($type) {
-            case 'keyword':
-            default:
-                $callback = function($givenKey) {
-                    return parent::pull($this->generateIndexKey($givenKey), []);
+            case 'inverse':
+                $getKeyCallback = function($givenKey) {
+                    return $this->generateInverseIndexKey($givenKey);
                 };
                 break;
-            case 'inverse':
-                $callback = function($givenKey) {
-                    return parent::pull($this->generateInverseIndexKey($givenKey), []);
+            case 'keyword':
+            default:
+                $getKeyCallback = function($givenKey) {
+                    return $this->generateIndexKey($givenKey);
                 };
                 break;
         }
 
         $affected = array();
         foreach ($givenKeys as $givenKey) {
-            $affected = array_merge($affected, call_user_func($callback, $givenKey));
+            $affected = array_merge($affected, parent::pull(call_user_func($getKeyCallback, $givenKey), []));
         }
 
         $this->setKeywordsOperation(false);
