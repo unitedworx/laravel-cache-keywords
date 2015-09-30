@@ -123,6 +123,56 @@ class KeywordsRepository extends IRepository
             throw new ReservedCacheKeyPatternException($key);
         }
     }
+    
+    /**
+     * Store an item in the cache using the specified method and arguments.
+     *
+     * @param  string $method
+     * @param  array  $args
+     * @return void
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     */
+    protected function writeCacheRecord($method, $args)
+    {
+        $this->checkReservedKeyPattern($args['key']);
+
+        // Store keywords without passing value as argument.
+        call_user_func_array(array($this, 'storeKeywords'), array_values(array_diff_key($args, ['value' => null])));
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
+
+        call_user_func_array(array('parent', $method), array_values($args));
+    }
+    
+    /**
+     * Fetch or store a default item in the cache using the specified method and arguments.
+     *
+     * @param  string $method
+     * @param  array  $args
+     * @return void
+     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     */
+    protected function fetchDefaultCacheRecord($method, $args)
+    {
+        // Instead of using has() we directly implement the value getter
+        // to avoid additional cache hits if the key exists.
+        if (is_null($value = parent::get($args['key']))) {
+            $this->checkReservedKeyPattern($args['key']);
+
+            // Store keywords without passing callback as argument.
+            call_user_func_array(array($this, 'storeKeywords'), array_values(array_diff_key($args, ['callback' => null])));
+
+            $value = call_user_func_array(array('parent', $method), array_values($args));
+        }
+
+        if (!$this->operatingOnKeywords()) {
+            $this->resetCurrentKeywords();
+        }
+
+        return $value;
+    }
 
     /**
      * Assembles a comparison of the provided keywords against the current state for a given key.
@@ -347,15 +397,7 @@ class KeywordsRepository extends IRepository
      */
     public function put($key, $value, $minutes)
     {
-        $this->checkReservedKeyPattern($key);
-
-        $this->storeKeywords($key, $minutes);
-
-        if (!$this->operatingOnKeywords()) {
-            $this->resetCurrentKeywords();
-        }
-
-        parent::put($key, $value, $minutes);
+        $this->writeCacheRecord(__FUNCTION__, compact('key','value','minutes'));
     }
 
     /**
@@ -395,15 +437,7 @@ class KeywordsRepository extends IRepository
      */
     public function forever($key, $value)
     {
-        $this->checkReservedKeyPattern($key);
-
-        $this->storeKeywords($key);
-
-        if (!$this->operatingOnKeywords()) {
-            $this->resetCurrentKeywords();
-        }
-
-        parent::forever($key, $value);
+        $this->writeCacheRecord(__FUNCTION__, compact('key','value'));
     }
 
     /**
@@ -417,21 +451,7 @@ class KeywordsRepository extends IRepository
      */
     public function remember($key, $minutes, Closure $callback)
     {
-        // Instead of using has() we directly implement the value getter
-        // to avoid additional cache hits if the key exists.
-        if (is_null($value = parent::get($key))) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, $minutes, $this->keywords);
-
-            $value = parent::remember($key, $minutes, $callback);
-        }
-
-        if (!$this->operatingOnKeywords()) {
-            $this->resetCurrentKeywords();
-        }
-
-        return $value;
+        return $this->fetchDefaultCacheRecord(__FUNCTION__, compact('key','minutes','callback'));
     }
 
     /**
@@ -444,21 +464,7 @@ class KeywordsRepository extends IRepository
      */
     public function sear($key, Closure $callback)
     {
-        // Instead of using has() we directly implement the value getter
-        // to avoid additional cache hits if the key exists.
-        if (is_null($value = parent::get($key))) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, null, $this->keywords);
-
-            $value = parent::sear($key, $callback);
-        }
-
-        if (!$this->operatingOnKeywords()) {
-            $this->resetCurrentKeywords();
-        }
-
-        return $value;
+        return $this->fetchDefaultCacheRecord(__FUNCTION__, compact('key','callback'));
     }
 
     /**
@@ -471,21 +477,7 @@ class KeywordsRepository extends IRepository
      */
     public function rememberForever($key, Closure $callback)
     {
-        // Instead of using has() we directly implement the value getter
-        // to avoid additional cache hits if the key exists.
-        if (is_null($value = parent::get($key))) {
-            $this->checkReservedKeyPattern($key);
-
-            $this->storeKeywords($key, null, $this->keywords);
-
-            $value = parent::rememberForever($key, $callback);
-        }
-
-        if (!$this->operatingOnKeywords()) {
-            $this->resetCurrentKeywords();
-        }
-
-        return $value;
+        return $this->fetchDefaultCacheRecord(__FUNCTION__, compact('key','callback'));
     }
 
     /**
