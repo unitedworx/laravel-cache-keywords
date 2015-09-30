@@ -75,16 +75,19 @@ class KeywordsRepository extends IRepository
      * @param  mixed $keywords
      * @return $this
      */
-    public function keywords($keywords = array(), $merge = false)
+    public function keywords($keywords = array())
     {
-        $keywords = is_array($keywords) ? $keywords : func_get_args();
+        $args = func_get_args();
+
+        $this->mergeKeywords = (is_bool(end($args)) || is_int(end($args))) ? array_pop($args) : false;
+
+        $keywords = is_array($keywords) ? $keywords : $args;
 
         array_walk($keywords, function (&$value) {
             $value = is_object($value) ? get_class($value) : $value;
         });
 
         $this->keywords = array_unique($keywords);
-        $this->mergeKeywords = $merge;
 
         return $this;
     }
@@ -162,7 +165,11 @@ class KeywordsRepository extends IRepository
 
             call_user_func_array([$this, 'storeKeywords'], array_only($args, ['key', 'minutes', 'keywords']));
 
-            $value = call_user_func_array(array('parent', $method), array_values($args));
+            $this->setKeywordsOperation(true);
+
+            $value = call_user_func_array(['parent', $method], array_values($args));
+
+            $this->setKeywordsOperation(false);
         }
 
         if (!$this->operatingOnKeywords()) {

@@ -1,12 +1,4 @@
-<?php
-/**
- * Test class file for the Laravel Cache Keywords package.
- *
- * Note that process isolation is turned on in phpunit.xml because of
- * the use of a static variable in KeywordsRepository.
- */
-
-namespace Propaganistas\LaravelCacheKeywords\Tests;
+<?php namespace Propaganistas\LaravelCacheKeywords\Tests;
 
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider;
@@ -83,6 +75,7 @@ class CacheKeywordsTest extends TestCase
     public function testFlush()
     {
         $this->cache->keywords('keyword2')->flush();
+
         $this->assertFalse($this->cache->has('key1'));
         $this->assertFalse($this->cache->has('key2'));
         $this->assertTrue($this->cache->has('key3'));
@@ -92,8 +85,8 @@ class CacheKeywordsTest extends TestCase
 
         $this->assertFalse($this->cache->has('keyword[keyword1]'));
         $this->assertFalse($this->cache->has('keyword[keyword2]'));
-        $this->assertEquals(['key3'], array_values($this->cache->get('keyword[keyword3]')));
-        $this->assertEquals(['key3', 'key4'], array_values($this->cache->get('keyword[keyword4]')));
+        $this->assertEquals(['key3'], $this->cache->get('keyword[keyword3]'));
+        $this->assertEquals(['key3', 'key4'], $this->cache->get('keyword[keyword4]'));
         $this->assertEquals(['key5'], $this->cache->get('keyword[keyword5]'));
         $this->assertEquals(['key6'], $this->cache->get('keyword[keyword6]'));
 
@@ -105,6 +98,7 @@ class CacheKeywordsTest extends TestCase
         $this->assertEquals(['keyword6'], $this->cache->get('keyword_index[key6]'));
 
         $this->cache->flush();
+
         $this->assertFalse($this->cache->has('key3'));
         $this->assertFalse($this->cache->has('key4'));
         $this->assertFalse($this->cache->has('key5'));
@@ -119,7 +113,7 @@ class CacheKeywordsTest extends TestCase
         $this->assertTrue($this->cache->has('key2'));
 
         $this->assertFalse($this->cache->has('keyword[keyword1]'));
-        $this->assertEquals(['key2'], array_values($this->cache->get('keyword[keyword2]')));
+        $this->assertEquals(['key2'], $this->cache->get('keyword[keyword2]'));
 
         $this->assertFalse($this->cache->has('keyword_index[key1]'));
         $this->assertEquals(['keyword2', 'keyword3'], $this->cache->get('keyword_index[key2]'));
@@ -146,19 +140,19 @@ class CacheKeywordsTest extends TestCase
         }
 
         try {
-            $this->cache->rememberForever('keyword_index[test]', function() { return 'test'; });
+            $this->cache->rememberForever('keyword_index[test]', function () {return 'test';});
             $this->fail($this->failReservedCacheKeyPatternException());
         } catch (ReservedCacheKeyPatternException $e) {
         }
 
         try {
-            $this->cache->remember('keyword[test]', 60, function() { return 'test'; });
+            $this->cache->remember('keyword[test]', 60, function () {return 'test';});
             $this->fail($this->failReservedCacheKeyPatternException());
         } catch (ReservedCacheKeyPatternException $e) {
         }
 
         try {
-            $this->cache->keywords('test')->sear('keyword_index[test]', function() { return 'test'; });
+            $this->cache->keywords('test')->sear('keyword_index[test]', function () {return 'test';});
             $this->fail($this->failReservedCacheKeyPatternException());
         } catch (ReservedCacheKeyPatternException $e) {
         }
@@ -179,6 +173,50 @@ class CacheKeywordsTest extends TestCase
     private function failReservedCacheKeyPatternException()
     {
         return 'Failed asserting that exception of type ' . ReservedCacheKeyPatternException::class . ' is thrown.';
+    }
+
+    public function testKeywordsAreOverwritten()
+    {
+        // Provide new keyword. Should remove all previous references and create new ones.
+        $this->cache->keywords('test')->put('key1', 'test', 60);
+        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        $this->assertEquals(['key2'], $this->cache->get('keyword[keyword2]'));
+        $this->assertEquals(['key1'], $this->cache->get('keyword[test]'));
+        $this->assertEquals(['test'], $this->cache->get('keyword_index[key1]'));
+
+        // Try existing keywords. Should do nothing.
+        $this->cache->keywords(['keyword3', 'keyword4'])->forever('key3', 'value3');
+        $this->assertEquals(['key2', 'key3'], $this->cache->get('keyword[keyword3]'));
+        $this->assertEquals(['key3', 'key4'], $this->cache->get('keyword[keyword4]'));
+        $this->assertEquals(['keyword3', 'keyword4'], $this->cache->get('keyword_index[key3]'));
+
+        // Try empty. Should remove all references.
+        $this->cache->keywords()->forever('key3', 'value3');
+        $this->assertEquals(['key2'], $this->cache->get('keyword[keyword3]'));
+        $this->assertEquals(['key4'], $this->cache->get('keyword[keyword4]'));
+        $this->assertNull($this->cache->get('keyword_index[key3]'));
+    }
+
+    public function testMergeKeywords()
+    {
+        // Add a keyword.
+        $this->cache->keywords('test', true)->put('key1', 'newValue', 60);
+        $this->assertEquals(['key1'], $this->cache->get('keyword[test]'));
+        $this->assertEquals(['key1'], $this->cache->get('keyword[keyword1]'));
+        $this->assertEquals(['key1', 'key2'], $this->cache->get('keyword[keyword2]'));
+        $this->assertEquals(['keyword1', 'keyword2', 'test'], $this->cache->get('keyword_index[key1]'));
+
+        // Try existing keywords; should do nothing.
+        $this->cache->keywords('keyword3', true)->forever('key3', 'value3');
+        $this->assertEquals(['key2', 'key3'], $this->cache->get('keyword[keyword3]'));
+        $this->assertEquals(['key3', 'key4'], $this->cache->get('keyword[keyword4]'));
+        $this->assertEquals(['keyword3', 'keyword4'], $this->cache->get('keyword_index[key3]'));
+
+        // Try empty; should do nothing.
+        $this->cache->keywords([], true)->forever('key3', 'value3');
+        $this->assertEquals(['key2', 'key3'], $this->cache->get('keyword[keyword3]'));
+        $this->assertEquals(['key3', 'key4'], $this->cache->get('keyword[keyword4]'));
+        $this->assertEquals(['keyword3', 'keyword4'], $this->cache->get('keyword_index[key3]'));
     }
 
 }
