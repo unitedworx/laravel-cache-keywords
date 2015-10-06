@@ -30,7 +30,7 @@ class CacheKeywordsServiceProvider extends IServiceProvider
      */
     public function provides()
     {
-        return ['cache'];
+        return ['cache', 'Illuminate\Cache\CacheManager', 'Illuminate\Contracts\Cache\Factory'];
     }
 
 }
