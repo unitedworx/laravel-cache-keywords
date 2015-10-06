@@ -18,7 +18,7 @@ class CacheKeywordsServiceProvider extends IServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('cache', function ($app) {
+        $this->app->singleton(['cache', 'Illuminate\Cache\CacheManager', 'Illuminate\Contracts\Cache\Factory'], function ($app) {
             return new CacheManager($app);
         });
     }
