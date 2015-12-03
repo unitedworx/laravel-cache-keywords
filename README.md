@@ -27,7 +27,7 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 2. Run the Composer update command
 
     ```bash
-    $ composer update
+    composer update
     ```
 
 3. In your app config, add the Service Provider to the end of the `$providers` array
