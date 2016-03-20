@@ -52,10 +52,10 @@ Cache::keywords('keyword1', 'keyword2')->put('key1', 'value1', $minutes);
 Cache::keywords(['keyword2', 'keyword3'])->put('key2', 'value2', $minutes);
 ```
 
-By default keywords are overwritten each time a cache record is updated. If you want to *add* the keywords to an existing set, call `keywords()` with `true` as the very last parameter:
+By default keywords are overwritten each time a cache record is updated. If you want to *add* the keywords to an existing set, call `mergeKeywords()` instead of `keywords()`:
 ```php
-Cache::keywords('addedKeyword1', 'addedKeyword2', true)->put('key1', 'updatedValue1', $minutes);
-Cache::keywords(['addedKeyword1', 'addedKeyword2'], true)->put('key2', 'updatedValue2', $minutes);
+Cache::mergeKeywords('addedKeyword1', 'addedKeyword2')->put('key1', 'updatedValue1', $minutes);
+Cache::mergeKeywords(['addedKeyword1', 'addedKeyword2'])->put('key2', 'updatedValue2', $minutes);
 ```
 
 Get a cache record easily without specifying its bound keywords:
