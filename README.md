@@ -18,19 +18,13 @@ Empowers Laravel's Cache with `keywords` behavior. Keywords differ from Laravel'
 
 ### Installation
 
-1. In the `require` key of `composer.json` file add the following
-
-    ```json
-    "propaganistas/laravel-cache-keywords": "~1.0"
-    ```
-
-2. Run the Composer update command
+1. Install the package using composer
 
     ```bash
-    composer update
+    composer require propaganistas/laravel-cache-keywords ~1.0
     ```
 
-3. In your app config, add the Service Provider to the end of the `$providers` array
+2. In your app config, add the Service Provider to the end of the `$providers` array
 
    **Laravel 5**
      ```php
