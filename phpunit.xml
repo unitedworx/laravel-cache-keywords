@@ -10,22 +10,16 @@
          stopOnFailure="false"
          syntaxCheck="false">
     <testsuites>
-        <testsuite name="Application Test Suite">
-            <directory>./tests/</directory>
+        <testsuite name="Package Test Suite">
+            <directory suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>
     <filter>
         <whitelist addUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src</directory>
-            <exclude>
-                <file>./src/CacheKeywordsServiceProvider.php</file>
-            </exclude>
         </whitelist>
     </filter>
-    <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="CACHE_DRIVER" value="array"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="QUEUE_DRIVER" value="sync"/>
-    </php>
+    <logging>
+        <log type="coverage-clover" target="./clover.xml"/>
+    </logging>
 </phpunit>

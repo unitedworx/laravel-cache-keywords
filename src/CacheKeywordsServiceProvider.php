@@ -4,7 +4,6 @@ use Illuminate\Support\ServiceProvider;
 
 class CacheKeywordsServiceProvider extends ServiceProvider
 {
-
     /**
      * Register the service provider.
      *
