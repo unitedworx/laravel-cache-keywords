@@ -20,7 +20,7 @@ class CacheKeywordsTest extends TestCase
      */
     protected function getPackageProviders($app)
     {
-        return [CacheKeywordsServiceProvider::class];
+        return ['Propaganistas\LaravelCacheKeywords\CacheKeywordsServiceProvider'];
     }
 
     /**
