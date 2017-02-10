@@ -181,7 +181,7 @@ class CacheKeywordsTest extends TestCase
 
     private function failReservedCacheKeyPatternException()
     {
-        return 'Failed asserting that exception of type ' . ReservedCacheKeyPatternException::class . ' is thrown.';
+        return 'Failed asserting that exception of type Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException is thrown.';
     }
 
     public function testKeywordsAreOverwritten()
