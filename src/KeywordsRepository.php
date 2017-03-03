@@ -261,7 +261,7 @@ class KeywordsRepository extends IlluminateRepository
 
         foreach (array_merge($keywordsState['new'], $keywordsState['obsolete']) as $keyword) {
             $indexKey = $this->generateIndexKey($keyword);
-            $oldIndex = parent::pull($indexKey, []);
+            $oldIndex = parent::get($indexKey, []);
             $newIndex = in_array($keyword, $keywordsState['obsolete']) ?
                 array_values(array_diff($oldIndex, [$key])) :
                 array_values(array_unique(array_merge($oldIndex, [$key])));
