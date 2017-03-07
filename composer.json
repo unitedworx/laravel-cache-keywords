@@ -1,5 +1,5 @@
 {
-    "name": "propaganistas/laravel-cache-keywords",
+    "name": "gousto/laravel-cache-keywords",
     "description": "Provides keywords behavior for the Laravel Cache.",
     "keywords": [
         "laravel",
