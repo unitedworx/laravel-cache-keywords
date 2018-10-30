@@ -86,7 +86,12 @@ class CacheKeywordsTest extends TestCase
         $this->assertTrue($this->cache->has('key5'));
         $this->assertTrue($this->cache->has('key6'));
 
-        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        /*
+         * Following assert was false by original design.
+         * Test altered to cover modifications from following commit
+         * https://github.com/Gousto/Laravel-Cache-Keywords/commit/e9cd31f70d1a76ca875b3013f3234dba316a8ea9
+         */
+        $this->assertTrue($this->cache->has('keyword[keyword1]'));
         $this->assertFalse($this->cache->has('keyword[keyword2]'));
         $this->assertEquals(['key3'], $this->cache->get('keyword[keyword3]'));
         $this->assertEquals(['key3', 'key4'], $this->cache->get('keyword[keyword4]'));
@@ -115,7 +120,12 @@ class CacheKeywordsTest extends TestCase
         $this->assertFalse($this->cache->has('key1'));
         $this->assertTrue($this->cache->has('key2'));
 
-        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        /*
+         * Following assert was false by original design.
+         * Test altered to cover modifications from following commit
+         * https://github.com/Gousto/Laravel-Cache-Keywords/commit/e9cd31f70d1a76ca875b3013f3234dba316a8ea9
+         */
+        $this->assertTrue($this->cache->has('keyword[keyword1]'));
         $this->assertEquals(['key2'], $this->cache->get('keyword[keyword2]'));
 
         $this->assertFalse($this->cache->has('keyword_index[key1]'));
@@ -188,13 +198,23 @@ class CacheKeywordsTest extends TestCase
     {
         // Provide new keyword. Should remove all previous references and create new ones.
         $this->cache->keywords('test')->put('key1', 'test', 60);
-        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        /*
+         * Following assert was false by original design.
+         * Test altered to cover modifications from following commit
+         * https://github.com/Gousto/Laravel-Cache-Keywords/commit/e9cd31f70d1a76ca875b3013f3234dba316a8ea9
+         */
+        $this->assertTrue($this->cache->has('keyword[keyword1]'));
         $this->assertEquals(['key2'], $this->cache->get('keyword[keyword2]'));
         $this->assertEquals(['key1'], $this->cache->get('keyword[test]'));
         $this->assertEquals(['test'], $this->cache->get('keyword_index[key1]'));
 
         $this->cache->overwriteKeywords('test1')->put('key1', 'test', 60);
-        $this->assertFalse($this->cache->has('keyword[keyword1]'));
+        /*
+         * Following assert was false by original design.
+         * Test altered to cover modifications from following commit
+         * https://github.com/Gousto/Laravel-Cache-Keywords/commit/e9cd31f70d1a76ca875b3013f3234dba316a8ea9
+         */
+        $this->assertTrue($this->cache->has('keyword[keyword1]'));
         $this->assertEquals(['key2'], $this->cache->get('keyword[keyword2]'));
         $this->assertEquals(['key1'], $this->cache->get('keyword[test1]'));
         $this->assertEquals(['test1'], $this->cache->get('keyword_index[key1]'));
