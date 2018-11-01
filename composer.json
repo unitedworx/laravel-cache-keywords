@@ -7,6 +7,11 @@
         "keywords",
         "tags"
     ],
+    "config": {
+        "platform": {
+            "php": "7.1.17"
+        }
+    },
     "license": "MIT",
     "authors": [
         {
@@ -15,12 +20,11 @@
         }
     ],
     "require": {
-        "illuminate/support": ">=5.0,<5.6",
-        "illuminate/cache": ">=5.0,<5.6"
+      "illuminate/support": ">=5.0,<5.8",
+      "illuminate/cache": ">=5.0,<5.8"
     },
     "require-dev": {
-        "orchestra/testbench": "^3.0",
-        "phpunit/phpunit": "^4.0|^5.0"
+        "orchestra/testbench": ">=3.0,<3.8"
     },
     "autoload": {
         "psr-4": {
