@@ -1,7 +1,7 @@
 ---
 version: 2
 gousto_build_image: &gousto_build_image
-- image: ${AWS_ACCOUNT_NUMBER}.dkr.ecr.eu-west-1.amazonaws.com/${GOUSTO_ENVIRONMENT}/circleci-image/php56:latest
+- image: ${AWS_ACCOUNT_NUMBER}.dkr.ecr.eu-west-1.amazonaws.com/${GOUSTO_ENVIRONMENT}/circleci-image/php71:latest
   aws_auth:
     aws_access_key_id: $AWS_ERC_ACCESS_KEY
     aws_secret_access_key: $AWS_ERC_SECRET_KEY
