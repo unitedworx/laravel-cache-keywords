@@ -20,8 +20,8 @@
         }
     ],
     "require": {
-      "illuminate/support": ">=5.0,<5.8",
-      "illuminate/cache": ">=5.0,<5.8"
+        "illuminate/support": ">=5.0,<5.8",
+        "illuminate/cache": ">=5.0,<5.8"
     },
     "require-dev": {
         "orchestra/testbench": ">=3.0,<3.8"
