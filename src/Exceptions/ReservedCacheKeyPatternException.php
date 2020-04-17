@@ -1,4 +1,4 @@
-<?php namespace Propaganistas\LaravelCacheKeywords\Exceptions;
+<?php namespace Unitedworx\LaravelCacheKeywords\Exceptions;
 
 use Exception;
 
