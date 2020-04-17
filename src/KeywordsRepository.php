@@ -1,8 +1,8 @@
-<?php namespace Propaganistas\LaravelCacheKeywords;
+<?php namespace Unitedworx\LaravelCacheKeywords;
 
 use Closure;
 use Illuminate\Cache\Repository as IlluminateRepository;
-use Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException;
+use Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException;
 
 class KeywordsRepository extends IlluminateRepository
 {
@@ -139,7 +139,7 @@ class KeywordsRepository extends IlluminateRepository
      * Checks if the given key collides with a keyword index and throws an exception.
      *
      * @param string $key
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     protected function checkReservedKeyPattern($key)
     {
@@ -154,7 +154,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string $method
      * @param  array  $args
      * @return void
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     protected function writeCacheRecord($method, $args)
     {
@@ -175,7 +175,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string $method
      * @param  array  $args
      * @return mixed
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     protected function fetchDefaultCacheRecord($method, $args)
     {
@@ -399,7 +399,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string $key
      * @param  mixed  $default
      * @return mixed
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function pull($key, $default = null)
     {
@@ -419,7 +419,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  mixed         $value
      * @param  \DateTime|int $minutes
      * @return void
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function put($key, $value, $minutes)
     {
@@ -433,7 +433,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  mixed         $value
      * @param  \DateTime|int $minutes
      * @return bool
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function add($key, $value, $minutes)
     {
@@ -459,7 +459,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string $key
      * @param  mixed  $value
      * @return void
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function forever($key, $value)
     {
@@ -473,7 +473,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  \DateTime|int $minutes
      * @param  \Closure      $callback
      * @return mixed
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function remember($key, $minutes, Closure $callback)
     {
@@ -486,7 +486,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string   $key
      * @param  \Closure $callback
      * @return mixed
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function sear($key, Closure $callback)
     {
@@ -499,7 +499,7 @@ class KeywordsRepository extends IlluminateRepository
      * @param  string   $key
      * @param  \Closure $callback
      * @return mixed
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function rememberForever($key, Closure $callback)
     {
@@ -511,7 +511,7 @@ class KeywordsRepository extends IlluminateRepository
      *
      * @param  string $key
      * @return bool
-     * @throws \Propaganistas\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
+     * @throws \Unitedworx\LaravelCacheKeywords\Exceptions\ReservedCacheKeyPatternException
      */
     public function forget($key)
     {
