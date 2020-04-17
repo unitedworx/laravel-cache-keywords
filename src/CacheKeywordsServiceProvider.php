@@ -1,4 +1,4 @@
-<?php namespace Propaganistas\LaravelCacheKeywords;
+<?php namespace Unitedworx\LaravelCacheKeywords;
 
 use Illuminate\Support\ServiceProvider;
 
