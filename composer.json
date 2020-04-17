@@ -15,8 +15,8 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Propaganistas",
-            "email": "Propaganistas@users.noreply.github.com"
+            "name": "Unitedworx",
+            "email": "paris@unitedworx.com"
         }
     ],
     "require": {
@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Propaganistas\\LaravelCacheKeywords\\": "src/"
+            "Unitedworx\\LaravelCacheKeywords\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Propaganistas\\LaravelCacheKeywords\\Tests\\": "tests/"
+            "Unitedworx\\LaravelCacheKeywords\\Tests\\": "tests/"
         }
     }
 }
