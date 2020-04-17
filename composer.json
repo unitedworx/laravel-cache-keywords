@@ -1,7 +1,7 @@
 {
     "name": "unitedworx/laravel-cache-keywords",
     "description": "Provides keywords behavior for the Laravel Cache.",
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
     "keywords": [
         "laravel",
         "cache",
