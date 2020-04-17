@@ -1,5 +1,5 @@
 {
-    "name": "gousto/laravel-cache-keywords",
+    "name": "unitedworx/laravel-cache-keywords",
     "description": "Provides keywords behavior for the Laravel Cache.",
     "keywords": [
         "laravel",
