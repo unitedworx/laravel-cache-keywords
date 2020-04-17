@@ -1,4 +1,4 @@
-<?php namespace Propaganistas\LaravelCacheKeywords;
+<?php namespace Unitedworx\LaravelCacheKeywords;
 
 use Illuminate\Cache\CacheManager as IlluminateCacheManager;
 use Illuminate\Contracts\Cache\Store;
@@ -9,7 +9,7 @@ class CacheManager extends IlluminateCacheManager
      * Create a new cache repository with the given implementation.
      *
      * @param  \Illuminate\Contracts\Cache\Store $store
-     * @return \Propaganistas\LaravelCacheKeywords\KeywordsRepository
+     * @return \Unitedworx\LaravelCacheKeywords\KeywordsRepository
      */
     public function repository(Store $store)
     {
